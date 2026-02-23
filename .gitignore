@@ -1,0 +1,11 @@
+*.exe
+/log/
+tmp
+static
+.env
+!.env.example
+go.sum
+.idea
+log.json
+bin
+/.vscode
