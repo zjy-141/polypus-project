@@ -45,10 +45,6 @@ func (s *Form) FormInput(c *gin.Context) {
 	c.JSON(http.StatusOK, ResponseNew(c, resp))
 }
 func (s *Form) FormSave(c *gin.Context) {
-	if SessionGet(c, "user").(UserSession).Level != 1 {
-		c.Error(common.ErrNew(errors.New("权限不足，该功能只有医生能使用"), common.LevelErr))
-		return
-	}
 	var info service.FormSave
 	if err := c.ShouldBind(&info); err != nil {
 		logger.Infof("controller %v\n", err)

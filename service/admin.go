@@ -68,6 +68,7 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 		ID:       doctor.ID,
 		Username: doctor.Username,
 		Phone:    doctor.Phone,
+		Level:    doctor.Level,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return DoctorShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)

@@ -14,7 +14,7 @@ func NewServer() *http.Server {
 	config.InitSession(r)
 	InitRouter(r)
 	s := &http.Server{
-		Addr:    "0.0.0.0:8088",
+		Addr:    "0.0.0.0:8080",
 		Handler: r,
 	}
 	return s
