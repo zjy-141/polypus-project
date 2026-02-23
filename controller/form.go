@@ -27,7 +27,7 @@ func (s *Form) PatientRegister(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-	c.JSON(http.StatusOK, ResponseNew(c, gin.H{"clinicNumber": respid}))
+	c.JSON(http.StatusOK, ResponseNew(c, gin.H{"PatientNumber": respid}))
 }
 func (s *Form) FormInput(c *gin.Context) {
 	var info service.FormInfo

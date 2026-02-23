@@ -24,7 +24,7 @@ import (
 type Form struct{}
 
 type Patient struct {
-	ClinicNumber string `json:"clinicNumber" binding:"required"`
+	PatientNumber string `json:"PatientNumber" binding:"required"`
 }
 type FormInfo struct {
 	Age           int     `form:"age" json:"age" binding:"required"`
@@ -44,7 +44,7 @@ type FormResp struct {
 }
 type FormSave struct {
 	DoctorId      int64
-	ClinicNumber  string  `json:"clinicNumber" binding:"required"`
+	PatientNumber string  `json:"PatientNumber" binding:"required"`
 	Age           int     `json:"age" binding:"required"`
 	PolypsNumber  int     `json:"polypsNumber" binding:"required,min=1"`
 	LongDiameter  float64 `json:"longDiameter" binding:"required,min=0"`
@@ -56,14 +56,14 @@ type FormSave struct {
 }
 
 type PatientHistoryGet struct {
-	ClinicNumber string `json:"clinicNumber" binding:"required"`
+	PatientNumber string `json:"PatientNumber" binding:"required"`
 	common.PagerForm
 }
 type PatientForm struct {
 	FormId        int64   `json:"formId"`
 	DoctorId      int64   `json:"doctorId" binding:"required"`
 	DoctorName    string  `json:"doctorName"`
-	ClinicNumber  string  `json:"clinicNumber" binding:"required"`
+	PatientNumber string  `json:"PatientNumber" binding:"required"`
 	FormTime      string  `json:"formTime"`
 	Age           int     `json:"age" binding:"required"`
 	PolypsNumber  int     `json:"polypsNumber" binding:"required,min=1"`
@@ -87,7 +87,7 @@ type FormUpdate struct {
 }
 type FormGet struct {
 	DoctorId         int64   `form:"doctorId" binding:"omitempty"`
-	ClinicNumber     string  `form:"clinicNumber" binding:"omitempty"`
+	PatientNumber    string  `form:"PatientNumber" binding:"omitempty"`
 	AgeMin           int     `form:"age_min" binding:"omitempty"`
 	AgeMax           int     `form:"age_max" binding:"omitempty"`
 	PolypsNumberMin  int     `form:"polypsNumber_min" binding:"omitempty"`
@@ -116,22 +116,22 @@ func (s *Form) PatientRegister(info Patient) (resp string, err error) {
 			panic(r)
 		}
 	}()
-	if number, err := strconv.Atoi(info.ClinicNumber); err != nil || number <= 0 {
+	if number, err := strconv.Atoi(info.PatientNumber); err != nil || number <= 0 {
 		return "", common.ErrNew(errors.New("病历号不符合条件"), common.ParamErr)
 	}
 	var patient model.Patient
-	patient.ClinicNumber = info.ClinicNumber
+	patient.PatientNumber = info.PatientNumber
 	if err := tx.Model(&model.Patient{}).Create(&patient).Error; err != nil {
 		tx.Rollback()
 		logger.Errorf("患者创建错误: %v", err)
 		var mysqlErr *mysql.MySQLError
 		if errors.As(err, &mysqlErr) && mysqlErr.Number == 1062 {
-			return info.ClinicNumber, nil
+			return info.PatientNumber, nil
 		} else {
 			return "", common.ErrNew(errors.New("患者创建错误"), common.SysErr)
 		}
 	}
-	resp = patient.ClinicNumber
+	resp = patient.PatientNumber
 	if err := tx.Commit().Error; err != nil {
 		return "", common.ErrNew(errors.New("事务提交错误"), common.SysErr)
 	}
@@ -200,7 +200,7 @@ func (s *Form) FormSave(info FormSave) (resp int64, err error) {
 		}
 	}()
 	var patient model.Patient
-	if err := tx.Model(&model.Patient{}).Where("clinic_number = ?", info.ClinicNumber).First(&patient).Error; err != nil {
+	if err := tx.Model(&model.Patient{}).Where("clinic_number = ?", info.PatientNumber).First(&patient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return -1, nil
 		}
@@ -209,7 +209,7 @@ func (s *Form) FormSave(info FormSave) (resp int64, err error) {
 	}
 	var form model.Form
 	form.DoctorID = info.DoctorId
-	form.PatientNumber = info.ClinicNumber
+	form.PatientNumber = info.PatientNumber
 	form.FormTime = time.Now().Format("2006-01-02 15:04:05")
 	form.Age = info.Age
 	form.LongDiameter = info.LongDiameter
@@ -240,7 +240,7 @@ func (s *Form) PatientHistory(get PatientHistoryGet) (resp PatientHistory, err e
 	}()
 	var forms []model.Form
 	var total int64
-	query := model.DB.Model(&model.Form{}).Where("patient_number like ?", get.ClinicNumber+"%")
+	query := model.DB.Model(&model.Form{}).Where("patient_number like ?", get.PatientNumber+"%")
 
 	if err := query.Session(&gorm.Session{}).Count(&total).Error; err != nil {
 		logger.Infof("controller %v\n", err)
@@ -256,7 +256,7 @@ func (s *Form) PatientHistory(get PatientHistoryGet) (resp PatientHistory, err e
 	for i, form := range forms {
 		resp.PatientForms[i].DoctorId = form.DoctorID
 		resp.PatientForms[i].DoctorName = form.Doctor.Username
-		resp.PatientForms[i].ClinicNumber = form.PatientNumber
+		resp.PatientForms[i].PatientNumber = form.PatientNumber
 		resp.PatientForms[i].FormTime = form.FormTime
 		resp.PatientForms[i].Age = form.Age
 		resp.PatientForms[i].PolypsNumber = form.PolypNumber
@@ -314,8 +314,8 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 	if get.DoctorId != 0 {
 		query = query.Where("doctor_id = ?", get.DoctorId)
 	}
-	if get.ClinicNumber != "" {
-		query = query.Where("patient_number like ?", get.ClinicNumber+"%")
+	if get.PatientNumber != "" {
+		query = query.Where("patient_number like ?", get.PatientNumber+"%")
 	}
 	if get.AgeMax != 0 {
 		query = query.Where("age <= ?", get.AgeMax)
@@ -363,7 +363,7 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 		resp.Forms[i].FormId = form.ID
 		resp.Forms[i].DoctorId = form.DoctorID
 		resp.Forms[i].DoctorName = form.Doctor.Username
-		resp.Forms[i].ClinicNumber = form.PatientNumber
+		resp.Forms[i].PatientNumber = form.PatientNumber
 		resp.Forms[i].FormTime = form.FormTime
 		resp.Forms[i].Age = form.Age
 		resp.Forms[i].PolypsNumber = form.PolypNumber

@@ -15,7 +15,7 @@ type Form struct {
 	IsWorse       string   `gorm:"type:VARCHAR(128) NOT NULL DEFAULT 0;comment:是否恶化" json:"is_worse"`
 	Comment       string   `gorm:"type:TEXT;comment:备注" json:"comment"`
 	Doctor        *Doctor  `gorm:"foreignKey:DoctorID" json:"doctor"`
-	Patient       *Patient `gorm:"foreignKey:PatientNumber;references:ClinicNumber" json:"patient"`
+	Patient       *Patient `gorm:"foreignKey:PatientNumber;references:PatientNumber" json:"patient"`
 	BaseModel
 }
 

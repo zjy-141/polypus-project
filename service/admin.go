@@ -21,6 +21,7 @@ type DoctorShow struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Phone    string `json:"phone"`
+	Level    int    `json:"level"`
 }
 
 type DoctorShows struct {
@@ -57,7 +58,7 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 		Username: info.Username,
 		Password: info.Password,
 		Phone:    info.Phone,
-		Level:    1,
+		Level:    1, //默认医生权限
 	}
 	if err := tx.Model(&model.Doctor{}).Create(doctor).Error; err != nil {
 		tx.Rollback()
@@ -72,6 +73,43 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 		return DoctorShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
 	}
 
+	return resp, nil
+}
+
+// 超级管理员提高医生权限
+func (s *Admin) DoctorUpgrade(id int64) (resp DoctorShow, err error) {
+	tx := model.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+	//查询医生是否存在
+	var doctor model.Doctor
+	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).First(&doctor).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return DoctorShow{}, common.ErrNew(errors.New("账号不存在"), common.ParamErr)
+		}
+		tx.Rollback()
+		return DoctorShow{}, common.ErrNew(errors.New("医生查询失败"), common.SysErr)
+	}
+	//提升至超级管理员权限
+	newLevel := 2
+	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("level", newLevel).Error; err != nil {
+		tx.Rollback()
+		return DoctorShow{}, common.ErrNew(errors.New("医生权限提升失败"), common.SysErr)
+	}
+	//返回新信息
+	resp = DoctorShow{
+		ID:       doctor.ID,
+		Username: doctor.Username,
+		Phone:    doctor.Phone,
+		Level:    doctor.Level,
+	}
+	if err := tx.Commit().Error; err != nil {
+		return DoctorShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
+	}
 	return resp, nil
 }
 
@@ -103,6 +141,7 @@ func (s *Admin) DoctorShow(pagerForm common.PagerForm) (resp DoctorShows, err er
 		resp.Doctors[i].ID = doctor.ID
 		resp.Doctors[i].Username = doctor.Username
 		resp.Doctors[i].Phone = doctor.Phone
+		resp.Doctors[i].Level = doctor.Level
 	}
 	if err := tx.Commit().Error; err != nil {
 		return DoctorShows{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
@@ -111,7 +150,7 @@ func (s *Admin) DoctorShow(pagerForm common.PagerForm) (resp DoctorShows, err er
 }
 
 // 超级管理员重置医生密码
-func (s *Admin) DoctorReset(id int64, adminId int64) (newPassword string, err error) {
+func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err error) {
 	tx := model.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -123,23 +162,29 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (newPassword string, err er
 	var doctor model.Doctor
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).First(&doctor).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", common.ErrNew(errors.New("账号不存在"), common.ParamErr)
+			return DoctorReset{}, common.ErrNew(errors.New("账号不存在"), common.ParamErr)
 		}
 		tx.Rollback()
-		return "", common.ErrNew(errors.New("医生查询失败"), common.SysErr)
+		return DoctorReset{}, common.ErrNew(errors.New("医生查询失败"), common.SysErr)
 	}
 	//验证权限
 	if doctor.Level >= 2 && doctor.ID != adminId {
-		return "", common.ErrNew(errors.New("权限不足"), common.ParamErr)
+		return DoctorReset{}, common.ErrNew(errors.New("权限不足"), common.LevelErr)
 	}
 	//重置为默认密码
-	newPassword = "123456"
+	newPassword := "123456"
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("password", newPassword).Error; err != nil {
 		tx.Rollback()
-		return "", common.ErrNew(errors.New("医生密码重置失败"), common.SysErr)
+		return DoctorReset{}, common.ErrNew(errors.New("医生密码重置失败"), common.SysErr)
+	}
+	//返回新信息
+	resp = DoctorReset{
+		ID:          doctor.ID,
+		Username:    doctor.Username,
+		NewPassword: doctor.Password,
 	}
 	if err := tx.Commit().Error; err != nil {
-		return "", common.ErrNew(errors.New("事务提交错误"), common.SysErr)
+		return DoctorReset{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
 	}
-	return newPassword, nil
+	return resp, nil
 }
