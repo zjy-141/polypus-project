@@ -9,7 +9,7 @@ import (
 )
 
 type UserSession struct {
-	ID       int
+	ID       int64
 	Username string
 	Level    int
 }

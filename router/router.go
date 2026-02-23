@@ -13,8 +13,33 @@ func InitRouter(r *gin.Engine) {
 	{
 		// example
 		// begin
-		apiRouter.GET("/", ctr.Hello.Hello)
-		apiRouter.GET("/time", ctr.Hello.HelloTime)
+		userRouter := apiRouter.Group("/user")
+		{
+			userRouter.POST("/login", ctr.User.Login)
+			userRouter := userRouter.Use(middleware.CheckRole(0))
+			userRouter.GET("/status", ctr.User.Status)
+			userRouter.DELETE("/logout", ctr.User.Logout)
+			userRouter.PUT("/update", ctr.User.Update)
+		}
+		adminRouter := apiRouter.Group("/admin").Use(middleware.CheckRole(2))
+		{
+			adminRouter.POST("/doctor/register", ctr.Admin.DoctorRegister)
+			adminRouter.GET("/doctor/show", ctr.Admin.DoctorShow)
+			adminRouter.PUT("/doctor/reset/:doctorid", ctr.Admin.DoctorReset)
+		}
+		doctorRouter := apiRouter.Group("/doctor").Use(middleware.CheckRole(1))
+		{
+			doctorRouter.POST("/patient/register", ctr.Form.PatientRegister)
+			doctorRouter.POST("/input", ctr.Form.FormInput)
+			doctorRouter.POST("/save", ctr.Form.FormSave)
+			doctorRouter.GET("/patient/history", ctr.Form.PatientHistory)
+			doctorRouter.PUT("/update", ctr.Form.FormUpdate)
+			doctorRouter.DELETE("/delete/:formid", ctr.Form.FormDelete)
+		}
+		backstageRouter := apiRouter.Group("/backstage").Use(middleware.CheckRole(1))
+		{
+			backstageRouter.GET("/get", ctr.Form.GetAll)
+		}
 		// end
 
 	}

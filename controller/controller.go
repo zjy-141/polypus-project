@@ -1,7 +1,9 @@
 package controller
 
 type Controller struct {
-	Hello
+	User
+	Form
+	Admin
 }
 
 func New() *Controller {

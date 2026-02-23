@@ -1,7 +1,9 @@
 package service
 
 type Service struct {
-	Hello
+	Admin
+	Form
+	User
 }
 
 func New() *Service {
