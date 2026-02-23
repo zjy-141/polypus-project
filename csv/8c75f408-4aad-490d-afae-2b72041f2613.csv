@@ -1,0 +1,2 @@
+﻿FormID,DoctorID,PatientNumber,FormTime,Age,LongDiameter,ShortDiameter,BaseType,PolypsNumber,RiskLevel,Probability,Advice,Comment
+1,1,11451,2026-02-23 11:20:50,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",不对不对

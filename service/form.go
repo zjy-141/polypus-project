@@ -87,6 +87,7 @@ type FormUpdate struct {
 }
 type FormGet struct {
 	DoctorId         int64   `form:"doctorId" binding:"omitempty"`
+	DoctorName       string  `form:"doctorName" binding:"omitempty"`
 	PatientNumber    string  `form:"PatientNumber" binding:"omitempty"`
 	AgeMin           int     `form:"age_min" binding:"omitempty"`
 	AgeMax           int     `form:"age_max" binding:"omitempty"`
@@ -314,6 +315,17 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 	// logger.Infof("-----------------------------------query %#v\n", get)
 	if get.DoctorId != 0 {
 		query = query.Where("doctor_id = ?", get.DoctorId)
+	}
+	if get.DoctorName != "" {
+		var doctors []model.Doctor
+		if err := model.DB.Model(&model.Doctor{}).Where("username like ?", "%"+get.DoctorName+"%").Find(&doctors).Error; err != nil {
+			return FormShow{}, common.ErrNew(errors.New("医生不存在"), common.ParamErr)
+		}
+		doctorIds := make([]int64, len(doctors))
+		for i, d := range doctors {
+			doctorIds[i] = d.ID
+		}
+		query = query.Where("doctor_id IN ?", doctorIds)
 	}
 	if get.PatientNumber != "" {
 		query = query.Where("patient_number like ?", get.PatientNumber+"%")

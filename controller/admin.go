@@ -83,3 +83,21 @@ func (s *Admin) DoctorReset(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, ResponseNew(c, resp))
 }
+
+// 超级管理员删除医生
+func (s *Admin) DoctorDelete(c *gin.Context) {
+	id, err := strconv.ParseInt(c.Param("doctorid"), 10, 64)
+	if err != nil {
+		logger.Infof("controller %v\n", err)
+		c.Error(common.ErrNew(errors.New("输入参数无法解析"), common.ParamErr))
+		return
+	}
+	adminId := SessionGet(c, "user").(UserSession).ID
+	err = srv.Admin.DoctorDelete(id, adminId)
+	if err != nil {
+		logger.Infof("controller %v\n", err)
+		c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, ResponseNew(c, gin.H{"message": "删除成功"}))
+}

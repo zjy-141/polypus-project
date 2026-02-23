@@ -163,6 +163,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	var doctor model.Doctor
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).First(&doctor).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			tx.Rollback()
 			return DoctorReset{}, common.ErrNew(errors.New("账号不存在"), common.ParamErr)
 		}
 		tx.Rollback()
@@ -170,6 +171,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	}
 	//验证权限
 	if doctor.Level >= 2 && doctor.ID != adminId {
+		tx.Rollback()
 		return DoctorReset{}, common.ErrNew(errors.New("不可重置其他超级管理员的密码"), common.LevelErr)
 	}
 	//重置为默认密码
@@ -188,4 +190,38 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 		return DoctorReset{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
 	}
 	return resp, nil
+}
+
+// 超级管理员删除医生
+func (s *Admin) DoctorDelete(id int64, adminId int64) (err error) {
+	tx := model.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			panic(r)
+		}
+	}()
+	//查询医生是否存在
+	var doctor model.Doctor
+	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).First(&doctor).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			tx.Rollback()
+			return common.ErrNew(errors.New("账号不存在"), common.ParamErr)
+		}
+		tx.Rollback()
+		return common.ErrNew(errors.New("医生查询失败"), common.SysErr)
+	}
+	//验证权限
+	if doctor.Level >= 2 && doctor.ID != adminId {
+		tx.Rollback()
+		return common.ErrNew(errors.New("不可删除其他超级管理员"), common.LevelErr)
+	}
+	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Delete(&model.Doctor{}).Error; err != nil {
+		tx.Rollback()
+		return common.ErrNew(errors.New("医生删除失败"), common.SysErr)
+	}
+	if err := tx.Commit().Error; err != nil {
+		return common.ErrNew(errors.New("事务提交错误"), common.SysErr)
+	}
+	return nil
 }
