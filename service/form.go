@@ -200,7 +200,7 @@ func (s *Form) FormSave(info FormSave) (resp int64, err error) {
 		}
 	}()
 	var patient model.Patient
-	if err := tx.Model(&model.Patient{}).Where("clinic_number = ?", info.PatientNumber).First(&patient).Error; err != nil {
+	if err := tx.Model(&model.Patient{}).Where("patient_number = ?", info.PatientNumber).First(&patient).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return -1, nil
 		}
@@ -254,6 +254,7 @@ func (s *Form) PatientHistory(get PatientHistoryGet) (resp PatientHistory, err e
 	resp.Total = total
 	resp.PatientForms = make([]PatientForm, len(forms))
 	for i, form := range forms {
+		resp.PatientForms[i].FormId = form.ID
 		resp.PatientForms[i].DoctorId = form.DoctorID
 		resp.PatientForms[i].DoctorName = form.Doctor.Username
 		resp.PatientForms[i].PatientNumber = form.PatientNumber

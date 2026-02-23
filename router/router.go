@@ -42,6 +42,5 @@ func InitRouter(r *gin.Engine) {
 			backstageRouter.GET("/get", ctr.Form.GetAll)
 		}
 		// end
-
 	}
 }

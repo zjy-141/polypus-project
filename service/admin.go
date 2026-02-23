@@ -106,7 +106,7 @@ func (s *Admin) DoctorUpgrade(id int64) (resp DoctorShow, err error) {
 		ID:       doctor.ID,
 		Username: doctor.Username,
 		Phone:    doctor.Phone,
-		Level:    doctor.Level,
+		Level:    newLevel,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return DoctorShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
@@ -170,7 +170,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	}
 	//验证权限
 	if doctor.Level >= 2 && doctor.ID != adminId {
-		return DoctorReset{}, common.ErrNew(errors.New("权限不足"), common.LevelErr)
+		return DoctorReset{}, common.ErrNew(errors.New("不可重置其他超级管理员的密码"), common.LevelErr)
 	}
 	//重置为默认密码
 	newPassword := "123456"
@@ -182,7 +182,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	resp = DoctorReset{
 		ID:          doctor.ID,
 		Username:    doctor.Username,
-		NewPassword: doctor.Password,
+		NewPassword: newPassword,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return DoctorReset{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
