@@ -92,6 +92,11 @@ func (s *User) Update(info UserUpdate) (err error) {
 			panic(r)
 		}
 	}()
+	if info.NewPassword == "123456" {
+		tx.Rollback()
+		return common.ErrNew(errors.New("新密码不能为默认密码"), common.ParamErr)
+	}
+	//查询医生信息
 	var thisDoctor model.Doctor
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", info.ID).First(&thisDoctor).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
