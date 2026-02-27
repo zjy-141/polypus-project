@@ -2,7 +2,7 @@ package model
 
 type Form struct {
 	DoctorID      int64   `gorm:"type:VARCHAR(128) NOT NULL;comment:医生ID" json:"doctor_id"`
-	PatientNumber string  `gorm:"type:VARCHAR(256) NOT NULL;comment:门诊号" json:"patient_number"`
+	ClinicNumber  string  `gorm:"type:VARCHAR(256) NOT NULL;comment:门诊号" json:"clinic_number"`
 	FormTime      string  `gorm:"type:VARCHAR(256) NOT NULL;comment:表单时间" json:"form_time"`
 	Age           int     `gorm:"type:INT NOT NULL DEFAULT 0;comment:年龄" json:"age"`
 	LongDiameter  float64 `gorm:"type:FLOAT NOT NULL DEFAULT 0;comment:长径" json:"long_diameter"`

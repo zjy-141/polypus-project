@@ -1,1 +1,1 @@
-﻿FormID,DoctorID,PatientNumber,FormTime,Age,LongDiameter,ShortDiameter,BaseType,PolypsNumber,RiskLevel,Probability,Advice,Comment
+﻿FormID,DoctorID,ClinicNumber,FormTime,Age,LongDiameter,ShortDiameter,BaseType,PolypsNumber,RiskLevel,Probability,Advice,Comment
