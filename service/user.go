@@ -21,12 +21,14 @@ type UserInfo struct {
 }
 type UserUpdate struct {
 	ID          int64
+	OldPassword string `json:"oldPassword" binding:"required,alphanum"`
 	NewPassword string `json:"newPassword" binding:"required,alphanum"`
 }
 type UserShow struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
-	Level    int
+	Level    int    `json:"level"`
+	Reset    int    `json:"reset"`
 }
 
 // 通用登录
@@ -61,6 +63,7 @@ func (s *User) Login(info UserInfo) (resp UserShow, err error) {
 		ID:       oneDoctor.ID,
 		Username: oneDoctor.Username,
 		Level:    oneDoctor.Level,
+		Reset:    oneDoctor.Reset,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return UserShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
@@ -97,23 +100,7 @@ func (s *User) Update(info UserUpdate) (err error) {
 			panic(r)
 		}
 	}()
-	{
-		hash, err := argon2id.CreateHash("123456", argon2id.DefaultParams)
-		if err != nil {
-			tx.Rollback()
-			return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
-		}
-		match, err := argon2id.ComparePasswordAndHash(info.NewPassword, hash)
-		if err != nil || match {
-			tx.Rollback()
-			return common.ErrNew(errors.New("新密码不能为默认密码"), common.ParamErr)
-		}
-	}
-	hash, err := argon2id.CreateHash(info.NewPassword, argon2id.DefaultParams)
-	if err != nil {
-		tx.Rollback()
-		return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
-	}
+
 	//查询医生信息
 	var thisDoctor model.Doctor
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", info.ID).First(&thisDoctor).Error; err != nil {
@@ -124,26 +111,23 @@ func (s *User) Update(info UserUpdate) (err error) {
 		tx.Rollback()
 		return common.ErrNew(errors.New("医生查询错误"), common.SysErr)
 	}
-	if thisDoctor.Level >= 2 {
-		thisDoctor.Password = hash
-		if err := tx.Save(&thisDoctor).Error; err != nil {
-			tx.Rollback()
-			return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
-		}
+	//验证旧密码
+	match, err := argon2id.ComparePasswordAndHash(info.OldPassword, thisDoctor.Password)
+	if err != nil || !match {
+		tx.Rollback()
+		return common.ErrNew(errors.New("旧密码错误"), common.ParamErr)
 	}
-	if thisDoctor.Level == 1 {
-		match, err := argon2id.ComparePasswordAndHash(info.NewPassword, "123456")
-		if err == nil && match {
-			thisDoctor.Password = hash
-			thisDoctor.Reset = 0
-			if err := tx.Save(&thisDoctor).Error; err != nil {
-				tx.Rollback()
-				return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
-			}
-		} else {
-			tx.Rollback()
-			return common.ErrNew(errors.New("请让超级管理员重置密码后修改"), common.ParamErr)
-		}
+	//修改医生密码
+	hash, err := argon2id.CreateHash(info.NewPassword, argon2id.DefaultParams)
+	if err != nil {
+		tx.Rollback()
+		return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
+	}
+	thisDoctor.Password = hash
+	thisDoctor.Reset = 2
+	if err := tx.Save(&thisDoctor).Error; err != nil {
+		tx.Rollback()
+		return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
 	}
 	if err := tx.Commit().Error; err != nil {
 		return common.ErrNew(errors.New("事务提交错误"), common.SysErr)
