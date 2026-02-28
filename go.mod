@@ -3,6 +3,7 @@ module polypus-project
 go 1.25
 
 require (
+	github.com/alexedwards/argon2id v1.0.0
 	github.com/gin-contrib/cors v1.7.6
 	github.com/gin-contrib/sessions v1.0.4
 	github.com/gin-gonic/gin v1.10.1

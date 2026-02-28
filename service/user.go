@@ -6,9 +6,13 @@ import (
 	"polypus-project/logger"
 	"polypus-project/model"
 
+	"github.com/alexedwards/argon2id"
 	"gorm.io/gorm"
 )
 
+// hash, err := argon2id.CreateHash("password", argon2id.DefaultParams)
+// // 验证
+// match, err := argon2id.ComparePasswordAndHash("password", hash)
 type User struct{}
 
 type UserInfo struct {
@@ -47,7 +51,8 @@ func (s *User) Login(info UserInfo) (resp UserShow, err error) {
 	}
 	//验证密码
 	password := oneDoctor.Password
-	if password != info.Password {
+	match, err := argon2id.ComparePasswordAndHash(info.Password, password)
+	if err != nil || !match {
 		tx.Rollback()
 		return UserShow{}, common.ErrNew(errors.New("密码错误"), common.ParamErr)
 	}
@@ -92,9 +97,22 @@ func (s *User) Update(info UserUpdate) (err error) {
 			panic(r)
 		}
 	}()
-	if info.NewPassword == "123456" {
+	{
+		hash, err := argon2id.CreateHash("123456", argon2id.DefaultParams)
+		if err != nil {
+			tx.Rollback()
+			return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
+		}
+		match, err := argon2id.ComparePasswordAndHash(info.NewPassword, hash)
+		if err != nil || match {
+			tx.Rollback()
+			return common.ErrNew(errors.New("新密码不能为默认密码"), common.ParamErr)
+		}
+	}
+	hash, err := argon2id.CreateHash(info.NewPassword, argon2id.DefaultParams)
+	if err != nil {
 		tx.Rollback()
-		return common.ErrNew(errors.New("新密码不能为默认密码"), common.ParamErr)
+		return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
 	}
 	//查询医生信息
 	var thisDoctor model.Doctor
@@ -107,15 +125,16 @@ func (s *User) Update(info UserUpdate) (err error) {
 		return common.ErrNew(errors.New("医生查询错误"), common.SysErr)
 	}
 	if thisDoctor.Level >= 2 {
-		thisDoctor.Password = info.NewPassword
+		thisDoctor.Password = hash
 		if err := tx.Save(&thisDoctor).Error; err != nil {
 			tx.Rollback()
 			return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
 		}
 	}
 	if thisDoctor.Level == 1 {
-		if thisDoctor.Password == "123456" {
-			thisDoctor.Password = info.NewPassword
+		match, err := argon2id.ComparePasswordAndHash(info.NewPassword, "123456")
+		if err == nil && match {
+			thisDoctor.Password = hash
 			if err := tx.Save(&thisDoctor).Error; err != nil {
 				tx.Rollback()
 				return common.ErrNew(errors.New("修改密码错误"), common.SysErr)

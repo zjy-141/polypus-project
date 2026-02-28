@@ -6,6 +6,7 @@ import (
 	"polypus-project/logger"
 	"polypus-project/model"
 
+	"github.com/alexedwards/argon2id"
 	"gorm.io/gorm"
 )
 
@@ -53,10 +54,16 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 	// 	tx.Rollback()
 	// 	return DoctorShow{}, common.ErrNew(errors.New("用户名已存在"), common.ParamErr)
 	// }
+	//密码加密
+	hash, err := argon2id.CreateHash(info.Password, argon2id.DefaultParams)
+	if err != nil {
+		tx.Rollback()
+		return DoctorShow{}, common.ErrNew(errors.New("密码加密失败"), common.SysErr)
+	}
 	//提交医生信息
 	doctor := &model.Doctor{
 		Username: info.Username,
-		Password: info.Password,
+		Password: hash,
 		Phone:    info.Phone,
 		Level:    1, //默认医生权限
 	}
@@ -176,7 +183,13 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	}
 	//重置为默认密码
 	newPassword := "123456"
-	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("password", newPassword).Error; err != nil {
+	//密码加密
+	hash, err := argon2id.CreateHash(newPassword, argon2id.DefaultParams)
+	if err != nil {
+		tx.Rollback()
+		return DoctorReset{}, common.ErrNew(errors.New("密码加密失败"), common.SysErr)
+	}
+	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("password", hash).Error; err != nil {
 		tx.Rollback()
 		return DoctorReset{}, common.ErrNew(errors.New("医生密码重置失败"), common.SysErr)
 	}
