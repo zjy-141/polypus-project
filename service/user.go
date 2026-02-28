@@ -135,6 +135,7 @@ func (s *User) Update(info UserUpdate) (err error) {
 		match, err := argon2id.ComparePasswordAndHash(info.NewPassword, "123456")
 		if err == nil && match {
 			thisDoctor.Password = hash
+			thisDoctor.Reset = 0
 			if err := tx.Save(&thisDoctor).Error; err != nil {
 				tx.Rollback()
 				return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
