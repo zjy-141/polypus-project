@@ -24,7 +24,7 @@ import (
 type Form struct{}
 
 type Patient struct {
-	ClinicNumber string `json:"ClinicNumber" binding:"required"`
+	ClinicNumber string `json:"clinicNumber" binding:"required"`
 }
 type FormInfo struct {
 	Age           int     `form:"age" json:"age" binding:"required"`
@@ -44,7 +44,7 @@ type FormResp struct {
 }
 type FormSave struct {
 	DoctorId      int64
-	ClinicNumber  string  `json:"ClinicNumber" binding:"required"`
+	ClinicNumber  string  `json:"clinicNumber" binding:"required"`
 	Age           int     `json:"age" binding:"required"`
 	PolypsNumber  int     `json:"polypsNumber" binding:"required,min=1"`
 	LongDiameter  float64 `json:"longDiameter" binding:"required,min=0"`

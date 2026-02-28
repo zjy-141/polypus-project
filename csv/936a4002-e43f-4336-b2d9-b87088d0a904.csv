@@ -1,0 +1,2 @@
+﻿FormID,DoctorID,ClinicNumber,FormTime,Age,LongDiameter,ShortDiameter,BaseType,PolypsNumber,RiskLevel,Probability,Advice,Comment
+1,1,111,2026-02-28 20:04:48,11,11.00,1.00,1,11,,0.00,,

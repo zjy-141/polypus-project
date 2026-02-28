@@ -7,6 +7,7 @@ import (
 	"polypus-project/model"
 
 	"github.com/alexedwards/argon2id"
+	"github.com/sethvargo/go-password/password"
 	"gorm.io/gorm"
 )
 
@@ -181,8 +182,8 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 		tx.Rollback()
 		return DoctorReset{}, common.ErrNew(errors.New("不可重置其他超级管理员的密码"), common.LevelErr)
 	}
-	//重置为默认密码
-	newPassword := "123456"
+	//生成随机密码
+	newPassword, err := password.Generate(16, 4, 0, false, false)
 	//密码加密
 	hash, err := argon2id.CreateHash(newPassword, argon2id.DefaultParams)
 	if err != nil {
