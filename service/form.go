@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"polypus-project/common"
+	"polypus-project/config"
 	"polypus-project/logger"
 	"polypus-project/model"
 	"strconv"
@@ -143,14 +144,8 @@ func (s *Form) FormInput(info FormInfo) (resp FormResp, err error) {
 		return FormResp{}, common.ErrNew(errors.New("长径不能小于短径"), common.SysErr)
 	}
 	//调用Python接口
-	host := os.Getenv("PREDICT_HOST")
-	if host == "" {
-		host = "127.0.0.1" // 默认值
-	}
-	port := os.Getenv("PREDICT_PORT")
-	if port == "" {
-		port = "8087" // 默认值
-	}
+	host := config.Config.PredictHost
+	port := config.Config.PredictPost
 	// 构建 URL
 	url := fmt.Sprintf("http://%s:%s/api/predict", host, port)
 	jsonData, err := json.Marshal(info)

@@ -19,6 +19,8 @@ var Config struct {
 	AllowOrigins string
 	AllowHeaders string
 	LogLevel     string
+	PredictHost  string
+	PredictPost  string
 }
 
 func envOr(env string, or string) string {
@@ -46,4 +48,6 @@ func initConfig() {
 	Config.AllowOrigins = envOr("APP_ALLOW_ORIGINS", "*")
 	Config.AllowHeaders = envOr("APP_ALLOW_HEADERS", "Origin|Content-Length|Content-Type|Authorization")
 	Config.LogLevel = envOr("APP_LOG_LEVEL", "info")
+	Config.PredictHost = envOr("PREDICT_HOST", "127.0.0.1")
+	Config.PredictPost = envOr("PREDICT_PORT", "8087")
 }
