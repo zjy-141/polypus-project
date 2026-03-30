@@ -24,7 +24,7 @@ func InitRouter(r *gin.Engine) {
 		adminRouter := apiRouter.Group("/admin").Use(middleware.CheckRole(2))
 		{
 			adminRouter.POST("/doctor/register", ctr.Admin.DoctorRegister)
-			adminRouter.PUT("/doctor/upgrade/:doctorid", ctr.Admin.DoctorUpgrade)
+			// adminRouter.PUT("/doctor/upgrade/:doctorid", ctr.Admin.DoctorUpgrade)
 			adminRouter.GET("/doctor/show", ctr.Admin.DoctorShow)
 			adminRouter.PUT("/doctor/reset/:doctorid", ctr.Admin.DoctorReset)
 			adminRouter.DELETE("/doctor/delete/:doctorid", ctr.Admin.DoctorDelete)
