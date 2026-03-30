@@ -231,9 +231,9 @@ func (s *Admin) DoctorDelete(id int64, adminId int64) (err error) {
 		return common.ErrNew(errors.New("医生查询失败"), common.SysErr)
 	}
 	//验证权限
-	if doctor.Level >= 2 && doctor.ID != adminId {
+	if doctor.Level >= 2 {
 		tx.Rollback()
-		return common.ErrNew(errors.New("不可删除其他超级管理员"), common.LevelErr)
+		return common.ErrNew(errors.New("不可删除超级管理员"), common.LevelErr)
 	}
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Delete(&model.Doctor{}).Error; err != nil {
 		tx.Rollback()
