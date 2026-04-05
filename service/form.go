@@ -374,7 +374,7 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 		if form.Doctor != nil {
 			resp.Forms[i].DoctorName = form.Doctor.Username
 		} else {
-			resp.Forms[i].DoctorName = "医生已被删除"
+			resp.Forms[i].DoctorName = "该医生已被删除"
 		}
 		resp.Forms[i].ClinicNumber = form.ClinicNumber
 		resp.Forms[i].FormTime = form.FormTime
