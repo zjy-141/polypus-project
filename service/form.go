@@ -370,7 +370,12 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 	for i, form := range forms {
 		resp.Forms[i].FormId = form.ID
 		resp.Forms[i].DoctorId = form.DoctorID
-		resp.Forms[i].DoctorName = form.Doctor.Username
+		// resp.Forms[i].DoctorName = form.Doctor.Username
+		if form.Doctor != nil {
+			resp.Forms[i].DoctorName = form.Doctor.Username
+		} else {
+			resp.Forms[i].DoctorName = "医生已被删除"
+		}
 		resp.Forms[i].ClinicNumber = form.ClinicNumber
 		resp.Forms[i].FormTime = form.FormTime
 		resp.Forms[i].Age = form.Age
