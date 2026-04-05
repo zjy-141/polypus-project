@@ -57,7 +57,7 @@ type FormSave struct {
 }
 
 type PatientHistoryGet struct {
-	ClinicNumber string `json:"clinicNumber" binding:"required"`
+	ClinicNumber string `form:"clinicNumber" binding:"required"`
 	common.PagerForm
 }
 type PatientForm struct {

@@ -28,7 +28,7 @@ type UserShow struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Level    int    `json:"level"`
-	Reset    int    `json:"reset"`
+	// Reset    int    `json:"reset"`
 }
 
 // 通用登录
@@ -63,7 +63,7 @@ func (s *User) Login(info UserInfo) (resp UserShow, err error) {
 		ID:       oneDoctor.ID,
 		Username: oneDoctor.Username,
 		Level:    oneDoctor.Level,
-		Reset:    oneDoctor.Reset,
+		// Reset:    oneDoctor.Reset,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return UserShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
@@ -100,7 +100,11 @@ func (s *User) Update(info UserUpdate) (err error) {
 			panic(r)
 		}
 	}()
-
+	//验证新密码和旧密码不能相同
+	if info.NewPassword == info.OldPassword {
+		tx.Rollback()
+		return common.ErrNew(errors.New("新密码和旧密码不能相同"), common.ParamErr)
+	}
 	//查询医生信息
 	var thisDoctor model.Doctor
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", info.ID).First(&thisDoctor).Error; err != nil {
@@ -124,7 +128,7 @@ func (s *User) Update(info UserUpdate) (err error) {
 		return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
 	}
 	thisDoctor.Password = hash
-	thisDoctor.Reset = 2
+	// thisDoctor.Reset = 2
 	if err := tx.Save(&thisDoctor).Error; err != nil {
 		tx.Rollback()
 		return common.ErrNew(errors.New("修改密码错误"), common.SysErr)

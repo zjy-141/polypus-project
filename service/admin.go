@@ -67,7 +67,7 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 		Password: hash,
 		Phone:    info.Phone,
 		Level:    1, //默认医生权限
-		Reset:    1, //默认可以重置密码
+		// Reset:    1, //默认可以重置密码
 	}
 	if err := tx.Model(&model.Doctor{}).Create(doctor).Error; err != nil {
 		tx.Rollback()
@@ -193,7 +193,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 	}
 	//更新密码和重置权限
 	doctor.Password = hash
-	doctor.Reset = 1
+	// doctor.Reset = 1
 	if err := tx.Save(&doctor).Error; err != nil {
 		tx.Rollback()
 		return DoctorReset{}, common.ErrNew(errors.New("医生密码重置失败"), common.SysErr)
