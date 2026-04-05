@@ -66,7 +66,7 @@ func (s *Admin) DoctorRegister(info DoctorInfo) (resp DoctorShow, err error) {
 		Username: info.Username,
 		Password: hash,
 		Phone:    info.Phone,
-		Level:    2, //默认医生权限
+		Level:    1, //默认医生权限
 		// Reset:    1, //默认可以重置密码
 	}
 	if err := tx.Model(&model.Doctor{}).Create(doctor).Error; err != nil {
@@ -105,7 +105,7 @@ func (s *Admin) DoctorUpgrade(id int64) (resp DoctorShow, err error) {
 		return DoctorShow{}, common.ErrNew(errors.New("医生查询失败"), common.SysErr)
 	}
 	//提升至超级管理员权限
-	newLevel := 3
+	newLevel := 2
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("level", newLevel).Error; err != nil {
 		tx.Rollback()
 		return DoctorShow{}, common.ErrNew(errors.New("医生权限提升失败"), common.SysErr)
@@ -179,7 +179,7 @@ func (s *Admin) DoctorReset(id int64, adminId int64) (resp DoctorReset, err erro
 		return DoctorReset{}, common.ErrNew(errors.New("医生查询失败"), common.SysErr)
 	}
 	//验证权限
-	if doctor.Level >= 3 && doctor.ID != adminId {
+	if doctor.Level >= 2 && doctor.ID != adminId {
 		tx.Rollback()
 		return DoctorReset{}, common.ErrNew(errors.New("不可重置其他超级管理员的密码"), common.LevelErr)
 	}
@@ -231,11 +231,11 @@ func (s *Admin) DoctorDelete(id int64, adminId int64) (err error) {
 		return common.ErrNew(errors.New("医生查询失败"), common.SysErr)
 	}
 	//验证权限
-	if doctor.Level >= 3 {
+	if doctor.Level >= 2 {
 		tx.Rollback()
 		return common.ErrNew(errors.New("不可删除超级管理员"), common.LevelErr)
 	}
-	newLevel := 1
+	newLevel := -1
 	if err := tx.Model(&model.Doctor{}).Where("id = ?", id).Update("level", newLevel).Error; err != nil {
 		tx.Rollback()
 		return common.ErrNew(errors.New("删除医生失败"), common.SysErr)

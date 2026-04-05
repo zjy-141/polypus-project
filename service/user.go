@@ -58,6 +58,11 @@ func (s *User) Login(info UserInfo) (resp UserShow, err error) {
 		tx.Rollback()
 		return UserShow{}, common.ErrNew(errors.New("密码错误"), common.ParamErr)
 	}
+	//level==-1不允许登录
+	if oneDoctor.Level == -1 {
+		tx.Rollback()
+		return UserShow{}, common.ErrNew(errors.New("该账号已被禁用"), common.LevelErr)
+	}
 	//验证通过，返回用户信息
 	resp = UserShow{
 		ID:       oneDoctor.ID,
