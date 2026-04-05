@@ -416,7 +416,7 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 	defer writer.Flush()
 
 	// 写入表头
-	header := []string{"FormID", "DoctorID", "ClinicNumber", "FormTime", "Age", "LongDiameter", "ShortDiameter", "BaseType", "PolypsNumber", "RiskLevel", "Probability", "Advice", "Comment"}
+	header := []string{"FormID", "DoctorID", "ClinicNumber", "FormTime", "Age", "LongDiameter", "ShortDiameter", "BaseType", "PolypsNumber", "RiskLevel", "Probability", "Advice", "IsWorse", "Comment"}
 	if err := writer.Write(header); err != nil {
 		return FormShow{}, err
 	}
@@ -435,6 +435,7 @@ func (s *Form) GetAll(get FormGet) (resp FormShow, err error) {
 			form.RiskLevel,
 			strconv.FormatFloat(form.Probability, 'f', 2, 64),
 			form.Advice,
+			form.IsWorse,
 			form.Comment,
 		}
 		if err := writer.Write(record); err != nil {
