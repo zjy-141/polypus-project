@@ -1,0 +1,10 @@
+﻿FormID,DoctorID,ClinicNumber,FormTime,Age,LongDiameter,ShortDiameter,BaseType,PolypsNumber,RiskLevel,Probability,Advice,IsWorse,Comment
+1,1,11451,2026-04-06 01:27:22,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",0,不对不对
+2,1,11451,2026-04-06 01:27:24,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+3,3,114514,2026-04-06 01:41:59,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+4,3,114514,2026-04-06 01:42:00,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+5,3,114514,2026-04-06 01:42:00,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+6,3,114514,2026-04-06 01:42:01,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+7,4,1145141,2026-04-06 01:42:47,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+8,4,1145141,2026-04-06 01:42:47,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,
+9,4,1145141,2026-04-06 01:42:48,58,10.00,6.00,1,1,Low Risk,0.24,"Follow-up ultrasound is recommended at 6 months, 1 year, and 2 years; Follow-up should be discontinued after 2 years in the absence of growth",,

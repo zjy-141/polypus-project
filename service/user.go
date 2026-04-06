@@ -10,9 +10,6 @@ import (
 	"gorm.io/gorm"
 )
 
-// hash, err := argon2id.CreateHash("password", argon2id.DefaultParams)
-// // 验证
-// match, err := argon2id.ComparePasswordAndHash("password", hash)
 type User struct{}
 
 type UserInfo struct {
@@ -28,7 +25,7 @@ type UserShow struct {
 	ID       int64  `json:"id"`
 	Username string `json:"username"`
 	Level    int    `json:"level"`
-	// Reset    int    `json:"reset"`
+	Reset    int    `json:"reset"`
 }
 
 // 通用登录
@@ -68,7 +65,7 @@ func (s *User) Login(info UserInfo) (resp UserShow, err error) {
 		ID:       oneDoctor.ID,
 		Username: oneDoctor.Username,
 		Level:    oneDoctor.Level,
-		// Reset:    oneDoctor.Reset,
+		Reset:    oneDoctor.Reset,
 	}
 	if err := tx.Commit().Error; err != nil {
 		return UserShow{}, common.ErrNew(errors.New("事务提交错误"), common.SysErr)
@@ -133,7 +130,7 @@ func (s *User) Update(info UserUpdate) (err error) {
 		return common.ErrNew(errors.New("新密码加密失败"), common.SysErr)
 	}
 	thisDoctor.Password = hash
-	// thisDoctor.Reset = 2
+	thisDoctor.Reset = 2
 	if err := tx.Save(&thisDoctor).Error; err != nil {
 		tx.Rollback()
 		return common.ErrNew(errors.New("修改密码错误"), common.SysErr)
